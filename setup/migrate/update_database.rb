@@ -35,7 +35,7 @@ puts "Update LDAP-database: #{@suffix}"
 puts "Continue?"
 STDIN.gets
 
-tempfile = parse_erb("add_course_branch")
+tempfile = parse_erb(template_name)
 puts tempfile.path
 system("ldapadd -Z -h ldap1.opinsys.fi -D uid=admin,o=puavo -W -f #{tempfile.path}")
 
