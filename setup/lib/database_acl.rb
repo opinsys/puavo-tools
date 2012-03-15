@@ -53,6 +53,12 @@ class People < LdapDn
   end
 end
 
+class Courses < LdapDn
+  def initialize
+    @dn_name = "ou=Courses,#{ $suffix }"
+  end
+end
+
 class Printers < LdapDn
   def initialize
     @dn_name = "ou=Printers,#{ $suffix }"
@@ -560,6 +566,8 @@ class LdapAcl
 															  PuavoUid.kadmin,
 															  PuavoUid.puppet,
 															  PuavoUid.monitor),		Rule.perms('+sxd', '*'),		],
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      [ Courses.subtree,						Rule.write(Set.org_owner),												],
 # --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     ]
   end
