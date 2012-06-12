@@ -268,7 +268,9 @@ class DN
 
     tmp_packed = Hash.new
 
-    tmp.values.each {|attr_group|
+    tmp.keys.each {|key|
+      attr_group = tmp[key]
+
       # Loop through attributes and store them again with who clauses
       # 
       # filter-attr1-by clause1 x-by clause2 y
@@ -286,7 +288,7 @@ class DN
         rules << rule
       }
 
-      key = "#{attr_group.first.filter}-#{who.uniq.sort.join('-')}"
+      key = "#{attr_group.first.filter}-#{attr_group.first.level}-#{who.uniq.sort.join('-')}"
       tmp_packed[key] = Array.new if !tmp_packed.has_key?(key)
 
       tmp_packed[key] << {
@@ -334,17 +336,11 @@ class ACL
   end
 
   def get_dn(elements)
-#    puts elements.inspect
-
     @root.get_child(elements)
   end
 
   def add_rule(data)
     rdn = get_dn(data[:dn])
-
-#    rule = Rule.new(data)
-
-#    puts "rdn: #{rdn.inspect}"
     rdn.add_rule(data)
   end
 
@@ -381,7 +377,6 @@ SYSTEM_GROUP_ADDRESSBOOK = "group/puavoSystemGroup/member=\"cn=addressbook,ou=Sy
 SYSTEM_GROUP_USERS = "dn.children=\"ou=People,#{suffix}\""
 SYSTEM_GROUP_CHECK_VERSION_2 = "set=\"[#{suffix}]/puavoVersion & [2]\""
 
-#"group/puavoEduOrg/owner=#{suffix}"
 ANONYMOUS = "anonymous"
 READ_ACCESS = "rscdx"
 WRITE_ACCESS = "wrscdx"
