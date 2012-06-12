@@ -354,8 +354,9 @@ suffix = "dc=test,dc=dev,dc=edu"
 PEOPLE = "ou=People"
 GROUPS = "ou=Groups"
 SCHOOLS = "ou=Schools"
-SCHOOLGROUPS = "ou=SchoolGroups,ou=Groups"
-SAMBA = "ou=Samba,ou=Hosts"
+SCHOOLGROUPS = "ou=SchoolGroups"
+SAMBA = "ou=Samba"
+HOSTS = "ou=Hosts"
 
 SET_ORG_OWNER = "set=\"[#{suffix}]/owner* & user\""
 SET_ALL_SCHOOL_ADMINS = "set=\"user/puavoAdminOfSchool*\""
@@ -423,7 +424,7 @@ acl.add_rule({ :dn => [ PEOPLE ],
                :who => [ALL_SERVERS,SET_ALL_SCHOOL_ADMINS],
                :access_rights => "az" })
 
-acl.add_rule({ :dn => [ SAMBA ],
+acl.add_rule({ :dn => [ SAMBA, HOSTS ],
                :who => [ALL_SERVERS],
                :access_rights => WRITE_ACCESS })
 
