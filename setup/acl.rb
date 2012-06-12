@@ -109,7 +109,15 @@ class DN
   end
 
   def add_rule(data)
-    data[:attrs].split(',').each {|attr|
+    attrs = Array.new
+
+    if data[:attrs]
+      attrs = data[:attrs].split(',')
+    else
+      attrs << "@extensibleObject"
+    end
+
+    attrs.each {|attr|
       data[:who].each {|who|
         @rules << Rule.new({ :dn => @basedn,
                              :filter => data[:filter],
@@ -186,10 +194,10 @@ class DN
     # case give no write access to children attribute.
 
     if !@rules.empty?
-      write_clauses = who_clauses("az").sort
+      write_clauses = who_clauses("az").concat(who_clauses("w")).sort
     else
       write_clauses = Array.new
-      read_clauses.concat(who_clauses("az")).sort
+      read_clauses.concat(who_clauses("az").concat(who_clauses("w"))).sort
     end
 
     write_clauses.each {|clause|
@@ -307,7 +315,7 @@ class DN
         pieces.concat(data[:who])
       }
 
-      ret << "dn.#{rule[:level]}=\"#{@basedn}\" " + pieces.uniq.join(' ')
+      ret << "to dn.#{rule[:level]}=\"#{@basedn}\" " + pieces.uniq.join(' ')
     }
 
     ret
@@ -349,6 +357,9 @@ suffix = "dc=test,dc=dev,dc=edu"
 
 PEOPLE = "ou=People"
 GROUPS = "ou=Groups"
+SCHOOLS = "ou=Schools"
+SCHOOLGROUPS = "ou=SchoolGroups,ou=Groups"
+SAMBA = "ou=Samba,ou=Hosts"
 
 SET_ORG_OWNER = "set=\"[#{suffix}]/owner* & user\""
 SET_ALL_SCHOOL_ADMINS = "set=\"user/puavoAdminOfSchool*\""
@@ -372,10 +383,12 @@ SYSTEM_GROUP_CHECK_VERSION_2 = "set=\"[#{suffix}]/puavoVersion & [2]\""
 
 #"group/puavoEduOrg/owner=#{suffix}"
 ANONYMOUS = "anonymous"
+READ_ACCESS = "rscdx"
+WRITE_ACCESS = "wrscdx"
 
 acl = ACL.new(suffix)
 
-acl.add_rule({ :dn => ["ou=Schools", "ou=Groups"],
+acl.add_rule({ :dn => [SCHOOLS, GROUPS],
                :filter => "(objectClass=posixGroup)",
                :attrs => "userPassword",
                :who => [SET_ALL_SCHOOL_ADMINS, SET_ORG_OWNER],
@@ -409,5 +422,14 @@ acl.add_rule({ :dn => [ PEOPLE ],
 #               :who => [SET_ALL_SCHOOL_ADMINS, SET_ORG_OWNER],
                :who => ["set=desti", SET_ALL_SCHOOL_ADMINS],
                :access_rights => "rscdx" })
+
+acl.add_rule({ :dn => [ PEOPLE ],
+               :attrs => "sambaNTPassword,userPassword,sambaAcctFlags",
+               :who => [ALL_SERVERS,SET_ALL_SCHOOL_ADMINS],
+               :access_rights => "az" })
+
+acl.add_rule({ :dn => [ SAMBA ],
+               :who => [ALL_SERVERS],
+               :access_rights => WRITE_ACCESS })
 
 puts acl.to_s
