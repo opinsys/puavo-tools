@@ -545,6 +545,21 @@ acl = ACL.new(suffix)
 #                  :who => [SET_ALL_SCHOOL_ADMINS, SET_ORG_OWNER],
 #                  :access_rights => "azx" })
 
+acl.add_ou_rule({ :dn => [ GROUPS ],
+                  :filter => "(objectClass=posixGroup)",
+                  :attrs => "cn,displayName,gidNumber,member",
+                  :clauses => [{
+                                :who => [ "dnattr=member" ], # XXX - performance must be evaluated!
+                                :access_rights => READ_ACCESS
+                               }],
+                  :oauth_tokens => [{ :write => "users" }],
+                  :oauth_limits => [{
+                                      :who => [SET_ALL_SCHOOL_ADMINS, SET_ORG_OWNER, ALL_SERVERS],
+                                      :access_rights => "az"
+                                     }],
+                  :ou_clauses => [{ :who => [SELF], :access_rights => READ_ACCESS }]
+                })
+
 acl.add_ou_rule({ :dn => [ PEOPLE ],
                   :filter => "(puavoLocked=TRUE)",
                   :attrs => "userPassword",
