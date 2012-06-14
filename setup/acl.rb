@@ -507,7 +507,10 @@ SCHOOLS = "ou=Schools"
 SCHOOLGROUPS = "ou=SchoolGroups"
 SAMBA = "ou=Samba"
 HOSTS = "ou=Hosts"
+DEVICES = "ou=Devices"
+SERVERS = "ou=Servers"
 PRINTERS = "ou=Printers"
+DESKTOPS = "ou=Desktops"
 
 SET_ORG_OWNER = "set=\"[#{suffix}]/owner* & user\""
 SET_ALL_SCHOOL_ADMINS = "set=\"user/puavoAdminOfSchool*\""
@@ -533,6 +536,7 @@ SYSTEM_GROUP_CHECK_VERSION_2 = "set=\"[#{suffix}]/puavoVersion & [2]\""
 ANONYMOUS = "anonymous"
 READ_ACCESS = "rscdx"
 WRITE_ACCESS = "wrscdx"
+SELFREAD_ACCESS = "selfread"
 
 UID_PUAVO = "dn.exact=\"uid=puavo,o=Puavo\""
 SELF = "self"
@@ -546,11 +550,26 @@ acl = ACL.new(suffix)
 #                  :access_rights => "azx" })
 
 acl.add_ou_rule({ :dn => [ GROUPS ],
-                  :filter => "(objectClass=posixGroup)",
+                  :filter => "(objectClass=puavoSchool)",
+                  :attrs => "cn,displayName,gidNumber,member,puavoSchoolHomePageURL",
+                  :clauses => [{
+                                :who => [ "dnattr=member" ], # XXX - performance must be evaluated!
+                                :access_rights => READ_ACCESS  # This should be SELFREAD_ACCESS, but it's broken on OpenLDAP 2.4.23
+                               }],
+                  :oauth_tokens => [{ :write => "users" }],
+                  :oauth_limits => [{
+                                      :who => [SET_ALL_SCHOOL_ADMINS, SET_ORG_OWNER, ALL_SERVERS],
+                                      :access_rights => "az"
+                                     }],
+                  :ou_clauses => [{ :who => [SELF], :access_rights => READ_ACCESS }]
+                })
+
+acl.add_ou_rule({ :dn => [ GROUPS ],
+                  :filter => "(objectClass=puavoEduGroup)",
                   :attrs => "cn,displayName,gidNumber,member",
                   :clauses => [{
                                 :who => [ "dnattr=member" ], # XXX - performance must be evaluated!
-                                :access_rights => READ_ACCESS
+                                :access_rights => READ_ACCESS  # This should be SELFREAD_ACCESS, but it's broken on OpenLDAP 2.4.23
                                }],
                   :oauth_tokens => [{ :write => "users" }],
                   :oauth_limits => [{
@@ -594,7 +613,7 @@ acl.add_ou_rule({ :dn => [ PEOPLE ],
                 })
 
 acl.add_ou_rule({ :dn => [ PEOPLE ],
-                  :attrs => "uid,puavoId,eduPersonPrincipalName,puavoEduPersonAffiliation,uidNumber,gidNumber,homeDirectory,givenName,sn,displayName,puavoEduPersonReverseDisplayName,preferredLanguage,puavoPreferredDesktop",
+                  :attrs => "uid,puavoId,eduPersonPrincipalName,puavoEduPersonAffiliation,uidNumber,gidNumber,homeDirectory,givenName,sn,displayName,puavoEduPersonReverseDisplayName,preferredLanguage,puavoPreferredDesktop,puavoSchool",
                    :clauses => [{
                                  :who => [SELF],
                                  :access_rights => READ_ACCESS }]
@@ -695,10 +714,26 @@ acl.add_ou_rule({ :dn => [ SAMBA, HOSTS ],
                                  :access_rights => WRITE_ACCESS }]
                 })
 
-acl.add_ou_rule({ :dn => [ PRINTERS, HOSTS ],
+acl.add_ou_rule({ :dn => [ PRINTERS ],
                   :clauses => [{
                                  :who => [ALL_SERVERS],
-                                 :access_rights => WRITE_ACCESS }]
+                                 :access_rights => WRITE_ACCESS },
+                               {
+                                 :who => [ALL_USERS],
+                                 :access_rights => READ_ACCESS }]
+                })
+
+acl.add_ou_rule({ :dn => [ DESKTOPS ],
+                  :clauses => [{
+                                 :who => [ ALL_USERS ],
+                                 :access_rights => READ_ACCESS }]
+                })
+
+acl.add_ou_rule({ :dn => [ DEVICES, HOSTS ],
+                  :attrs => "puavoHostname,puavoTag",
+                  :clauses => [{
+                                 :who => [ ALL_USERS ],
+                                 :access_rights => READ_ACCESS }]
                 })
 
 acl.add_rule({ :dn => [ "sambaDomainName=#{samba_domain}" ],
