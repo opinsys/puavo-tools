@@ -76,9 +76,9 @@ end
 `cp schema/*.ldif /etc/ldap/schema/`
 `rm -rf /etc/ldap/slapd.d/*`
 
-`cp certs/slapd-ca.crt /etc/ssl/certs/slapd-ca.crt`
-`cp certs/slapd-server.crt /etc/ssl/certs/slapd-server.crt`
-`cp certs/slapd-server.key /etc/ssl/certs/slapd-server.key`
+`test ! -e /etc/ssl/certs/slapd-ca.crt && cp certs/slapd-ca.crt /etc/ssl/certs/slapd-ca.crt`
+`test ! -e /etc/ssl/certs/slapd-server.crt && cp certs/slapd-server.crt /etc/ssl/certs/slapd-server.crt`
+`test ! -e  /etc/ssl/certs/slapd-server.key && cp certs/slapd-server.key /etc/ssl/certs/slapd-server.key`
 
 `chown openldap.openldap /etc/ssl/certs/slapd-server.key`
 `chown openldap.openldap /etc/ssl/certs/slapd-server.crt`
