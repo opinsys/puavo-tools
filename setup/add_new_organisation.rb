@@ -1,4 +1,5 @@
 #!/usr/bin/ruby
+# -*- coding: utf-8 -*-
 #
 # Usage: ruby add_new_organisation.rb <organisation name>
 #
@@ -7,6 +8,63 @@ $LOAD_PATH.unshift( File.join( File.dirname(__FILE__), 'lib' ) )
 
 require 'rubygems'
 require 'active_ldap'
+require 'optparse'
+
+options = {}
+a = OptionParser.new do |opts|
+  opts.banner = "Usage: add_new_organisation [options]"
+
+  opts.on("-y", "--yes", "Automatic yes to prompts") do |y|
+    options[:yes] = y
+  end
+
+  opts.on("-o=ORGANISATION", "Organisation") do |organisation|
+    options[:organisation] = organisation
+  end
+
+  opts.on("--domain [DOMAIN]", "Domain") do |domain|
+    options[:domain] = domain
+  end
+  opts.on("--organisation_name [ORGANISATION_NAME]", "Organisation name") do |organisation|
+    options[:organisation_name] = organisation
+  end
+  opts.on("--legal_name [LEGAL_NAME]", "Legal name") do |legal_name|
+    options[:legal_name] = legal_name
+  end
+  opts.on("--samba_domain [SAMBA_DOMAIN]", "Samba domain") do |samba_domain|
+    options[:samba_domain] = samba_domain
+  end
+  opts.on("--puppet_host [PUPPET_HOST]", "Puppet host") do |puppet_host|
+    options[:puppet_host] = puppet_host
+  end
+  opts.on("--suffix [SUFFIX]", "Suffix") do |suffix|
+    options[:suffix] = suffix
+  end
+
+  opts.on("--given_name [GIVEN_NAME]", "Given name") do |given_name|
+    options[:given_name] = given_name
+  end
+
+  opts.on("--surname [SURNAME]", "Surname") do |surname|
+    options[:surname] = surname
+  end
+  opts.on("--username [USERNAME]", "Username") do |username|
+    options[:username] = username
+  end
+  opts.on("--password [PASSWORD]", "Password") do |password|
+    options[:password] = password
+  end
+  opts.on_tail("-h", "--help", "Show this message") do
+    puts opts
+    exit
+  end
+end.parse!
+
+unless options.has_key?(:organisation)
+  puts "Required option --organisation missing"
+  exit
+end
+
 # LDAP configuration
 if configurations = YAML.load_file("config/ldap.yml") rescue nil
   ActiveLdap::Base.configurations = configurations
@@ -36,7 +94,6 @@ require 'users/user'
 require 'users/samba_domain'
 require 'users/ldap_organisation'
 require 'kerberos'
-require 'readline'
 
 def newpass( len )
   chars = ("a".."z").to_a + ("A".."Z").to_a + ("0".."9").to_a
@@ -53,83 +110,17 @@ domain_template = configurations["settings"]["templates"]["domain"]
 # This needs to be cleaned up once the actual settings and needs
 # have been figured out
 
-case ARGV.length
-        when 1
-		orgname = ARGV.first
-		domain = domain_template % orgname.downcase
+orgname = options[:organisation]
+domain = options.has_key?(:domain) ? options[:domain] : domain_template % orgname.downcase 
 
-		suffix = suffix_template % orgname.downcase
-		suffix_start = suffix.split(',')[0]
-		organisation_name = orgname
-		legal_name = organisation_name
+suffix = options.has_key?(:suffix) ? options[:suffix] : suffix_template % orgname.downcase
+suffix_start = suffix.split(',')[0]
+organisation_name = options.has_key?(:organisation_name) ? options[:organisation_name] : orgname 
+legal_name = options.has_key?(:legal_name) ? options[:legal_name] : organisation_name
 
-		puppet_host = puppet_host_template % orgname.downcase
-		samba_domain = samba_domain_template % orgname.upcase
-        when 2
-		orgname = ARGV.first
-		domain = ARGV[1]
-		
-		suffix = suffix_template % orgname.downcase
-		suffix_start = suffix.split(',')[0]
-		organisation_name = orgname
-		legal_name = organisation_name
-
-		puppet_host = puppet_host_template % orgname.downcase
-		samba_domain = samba_domain_template % orgname.upcase
-        when 3
-		orgname = ARGV.first
-		domain = ARGV[1]
-
-		suffix = suffix_template % orgname.downcase
-		suffix_start = suffix.split(',')[0]
-		organisation_name = ARGV[2]
-		legal_name = organisation_name
-		puppet_host = puppet_host_template % orgname.downcase
-		samba_domain = samba_domain_template % orgname.upcase
-        when 4
-		orgname = ARGV.first
-		domain = ARGV[1]
-
-		suffix = suffix_template % orgname.downcase
-		suffix_start = suffix.split(',')[0]
-		organisation_name = ARGV[2]
-		legal_name = ARGV[3]
-		puppet_host = puppet_host_template % orgname.downcase
-		samba_domain = samba_domain_template % orgname.upcase
-        when 5
-		orgname = ARGV.first
-		domain = ARGV[1]
-
-		suffix = suffix_template % orgname.downcase
-		suffix_start = suffix.split(',')[0]
-		organisation_name = ARGV[2]
-		legal_name = ARGV[3]
-		samba_domain = ARGV[4]
-		puppet_host = puppet_host_template % orgname.downcase
-        when 6
-		orgname = ARGV.first
-		domain = ARGV[1]
-
-		suffix = suffix_template % orgname.downcase
-		suffix_start = suffix.split(',')[0]
-		organisation_name = ARGV[2]
-		legal_name = ARGV[3]
-		samba_domain = ARGV[4]
-		puppet_host = ARGV[5]
-        when 7
-		orgname = ARGV.first
-		domain = ARGV[1]
-
-		suffix = ARGV[6]
-		suffix_start = suffix.split(',')[0]
-		organisation_name = ARGV[2]
-		legal_name = ARGV[3]
-		samba_domain = ARGV[4]
-		puppet_host = ARGV[5]
-	else
-                puts "Usage: $0 orgname [domain_name] [Organisation name] [Legal name] [samba domain] [puppet host] [suffix]"
-		exit
-end
+puppet_host = options.has_key?(:puppet_host) ? options[:puppet_host] : puppet_host_template % orgname.downcase
+samba_domain = options.has_key?(:samba_domain) ? options[:samba_domain] : samba_domain_template % orgname.upcase
+#puts "Usage: $0 orgname [domain_name] [Organisation name] [Legal name] [samba domain] [puppet host] [suffix]"
 
 puts "******************************************************"
 puts "  Initialising organisation: #{organisation_name}"
@@ -146,7 +137,7 @@ puts "* Domain: #{domain}"
 puts "* Puppet host: #{puppet_host}"
 puts "* Suffix start: #{suffix_start}"
 
-Readline.readline('OK?', true)
+Readline.readline('OK?', true) unless options[:yes]
 begin
   new_db = Database.new( "olcSuffix" => suffix,
                          "olcRootDN" => rootDN,
@@ -281,18 +272,22 @@ end
 puts "Create organisation owner:"
 
 print "Given name: "
-given_name = STDIN.gets.chomp
+given_name = options.has_key?(:given_name) ? options[:given_name] : STDIN.gets.chomp
 
 print "Surname: "
-surname = STDIN.gets.chomp
+surname = options.has_key?(:surname) ? options[:surname] : STDIN.gets.chomp
 print "Username: "
-username = STDIN.gets.chomp
-system('stty','-echo');
-print "Password: "
-password = STDIN.gets.chomp
-print "\nPassword confirmation: "
-password_confirmation = STDIN.gets.chomp
-system('stty','echo');
+username = options.has_key?(:username) ? options[:username] : STDIN.gets.chomp
+if options.has_key?(:password)
+  password = options[:password]
+else
+  system('stty','-echo');
+  print "Password: "
+  password = STDIN.gets.chomp
+  print "\nPassword confirmation: "
+  password_confirmation = STDIN.gets.chomp
+  system('stty','echo');
+end
 
 user = User.new
 
@@ -327,3 +322,4 @@ puts "\nSets the user (#{user.uid}) as the owner of the organisation"
 ldap_organisation = LdapOrganisation.first
 ldap_organisation.owner = Array(ldap_organisation.owner).push user.dn
 ldap_organisation.save
+
