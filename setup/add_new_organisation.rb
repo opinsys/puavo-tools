@@ -146,8 +146,7 @@ begin
   # Save without validation
   new_db.save(false)
 rescue => e
-  puts e
-  exit
+  raise e
 end
 
 new_db = Database.find(:first, :attribute => 'olcSuffix', :value => suffix)
@@ -305,10 +304,14 @@ while user_save != true
     user.save!
     user_save = true
   rescue Exception => e
-    puts
-    puts e
-    puts "Cannot save user, press enter to try again"
-    STDIN.gets
+    if options[:yes]
+      raise e
+    else
+      puts
+      puts e
+      puts "Cannot save user, press enter to try again"
+      STDIN.gets
+    end
   end
 end
 
