@@ -4,10 +4,10 @@ class SystemGroup < LdapOrganisationBase
                 :classes => ['puavoSystemGroup'])
 
   def self.create_system_groups
-    [ { "cn" => "auth", "description" => "LDAP bind (dn, uid)" },
-      { "cn" => "auth", "description" => "LDAP bind (dn, uid)" },
-      { "cn" => "getent", "description" => "getent passwd and group" },
-      { "cn" => "printerqueues", "description" => "Printer queues" },
+    [ { "cn" => "auth",
+        "description" => "Services that have only minimal information needed for ldap simple binds (dn, uid)" },
+      { "cn" => "getent", "description" => "Services that have access to all information needed for getent" },
+      { "cn" => "printerqueues", "description" => "Services that have access to printer queues" },
       { "cn" => "servers", "description" => "Server information" },
       { "cn" => "devices", "description" => "Client devices" },
       { "cn" => "bookmarks", "description" => "Bookmarks" },
