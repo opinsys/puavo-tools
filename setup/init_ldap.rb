@@ -112,9 +112,7 @@ tempfile.delete
 # can be done with ldapmodify. This includes settings ACLs and
 # syncrepl replication.
 
-["set_global_acl",
- "set_syncrepl_settings",
- "set_puavo_syncrepl_settings"].each do |basename|
+["set_global_acl"].each do |basename|
 
   ldif_template = File.read("templates/#{basename}.ldif.erb")
   ldif = ERB.new(ldif_template, 0, "%<>")
