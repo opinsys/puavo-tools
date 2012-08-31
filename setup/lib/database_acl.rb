@@ -53,6 +53,20 @@ class People < LdapDn
   end
 end
 
+class OAuthAccessToken < LdapDn
+  def initialize
+    # ou=Tokens,ou=OAuth,dc=edu,dc=example,dc=fi
+    @dn_name = "ou=Tokens,ou=OAuth,#{ $suffix }"
+  end
+end
+
+class OAuthClientServer < LdapDn
+  def initialize
+    # ou=Clients,ou=OAuth,dc=edu,dc=example,dc=fi
+    @dn_name = "ou=Clients,ou=OAuth,#{ $suffix }"
+  end
+end
+
 class Printers < LdapDn
   def initialize
     @dn_name = "ou=Printers,#{ $suffix }"
@@ -259,6 +273,10 @@ class LdapAcl
 															  PuavoUid.puavo),		Rule.perms('auth', 'anonymous'),	],
 # --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
       [ People.exact,		attrs(%w(children)),			Rule.write(Set.all_admins),		Rule.read(PuavoUid.puavo),							],
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      [ OAuthAccessToken.exact,		attrs(%w(children)),			Rule.write('users'),			Rule.read('users'),							],
+      [ OAuthAccessToken.children,	attrs(%w(entry)),			Rule.write('users'),			Rule.read('users'),							],
+      [ OAuthClientServer.children,	attrs(%w(entry userpassword)),			Rule.read('users'),	Rule.perms('auth', 'anonymous')							],
 # --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
       [ People.subtree,		attrs(%w(puavoAdminOfSchool)),		Rule.write(Set.owner_and_user),		Rule.read('users'),								],
 # --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
