@@ -275,7 +275,7 @@ class LdapAcl
       [ People.exact,		attrs(%w(children)),			Rule.write(Set.all_admins),		Rule.read(PuavoUid.puavo),							],
 # --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
       [ OAuthAccessToken.exact,		attrs(%w(children)),			Rule.write('users'),			Rule.read('users'),							],
-      [ OAuthAccessToken.children,	attrs(%w(entry)),			Rule.write('users'),			Rule.read('users'),							],
+      [ OAuthAccessToken.children,	attrs(%w(entry puavoOAuthTokenType)),			Rule.write('users'),			Rule.read('users'),							],
       [ OAuthClientServer.children,	attrs(%w(entry userpassword)),			Rule.read('users'),	Rule.perms('auth', 'anonymous')							],
 # --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
       [ People.subtree,		attrs(%w(puavoAdminOfSchool)),		Rule.write(Set.owner_and_user),		Rule.read('users'),								],
