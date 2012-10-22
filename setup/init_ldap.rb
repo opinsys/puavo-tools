@@ -34,7 +34,7 @@ if configuration = YAML.load_file("config/ldap.yml") rescue nil
   @slavedn = configuration["settings"]["slave"]["bind_dn"]
   @slavepw = configuration["settings"]["slave"]["password"]
 
-  @servers = configuration["settings"]["syncrepl"]["urls"]
+  @servers = Array.new
 else
   puts "LDAP configuration file (config/ldap.yml) not found!"
   exit
