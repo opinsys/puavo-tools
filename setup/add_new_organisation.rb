@@ -142,6 +142,12 @@ puts "* Puppet host: #{puppet_host}"
 puts "* Suffix start: #{suffix_start}"
 
 Readline.readline('OK?', true) unless options[:yes]
+
+# FIXME: asking whether the user wants to configure kerberos?
+puts "Stop krb5-kdc and kadmind services"
+`/etc/init.d/krb5-kdc stop`
+`/etc/init.d/puavo_kadmind stop`
+
 begin
   new_db = Database.new( "olcSuffix" => suffix,
                          "olcRootDN" => rootDN,
@@ -273,6 +279,14 @@ if configurations["settings"]["puppetmaster"]["enable"]
 else
   puts "Puppet configuration disabled"
 end
+
+puts "Update keytab file"
+`../puppet/files/usr/local/sbin/puavo_update_kdc_settings`
+
+# FIXME: asking whether the user wants to configure kerberos?
+puts "Stop krb5-kdc and kadmind services"
+`/etc/init.d/krb5-kdc start`
+`/etc/init.d/puavo_kadmind start`
 
 # User
 puts "Create organisation owner:"
