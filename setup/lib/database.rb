@@ -18,6 +18,9 @@ class Database < ActiveLdap::Base
 
   def set_attribute_values
     self.olcDatabase = 'hdb'
+    self.olcDbConfig = ['set_cachesize 0 10485760 0',
+                        'set_lg_bsize 2097512',
+                        'set_flags DB_LOG_AUTOREMOVE']
     self.olcDbCheckpoint = '64 5'
     self.olcDbCachesize = '10000'
     self.olcLastMod = 'TRUE'
