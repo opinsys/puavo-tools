@@ -9,6 +9,7 @@ $LOAD_PATH.unshift( File.join( File.dirname(__FILE__), 'lib' ) )
 require 'rubygems'
 require 'active_ldap'
 require 'optparse'
+require 'readline'
 
 options = {}
 a = OptionParser.new do |opts|
