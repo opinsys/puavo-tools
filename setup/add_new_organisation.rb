@@ -143,6 +143,27 @@ puts "* Suffix start: #{suffix_start}"
 
 Readline.readline('OK?', true) unless options[:yes]
 
+# User
+puts "Create organisation owner:"
+
+print "Given name: "
+given_name = options.has_key?(:given_name) ? options[:given_name] : STDIN.gets.chomp
+
+print "Surname: "
+surname = options.has_key?(:surname) ? options[:surname] : STDIN.gets.chomp
+print "Username: "
+username = options.has_key?(:username) ? options[:username] : STDIN.gets.chomp
+if options.has_key?(:password)
+  password = options[:password]
+else
+  system('stty','-echo');
+  print "Password: "
+  password = STDIN.gets.chomp
+  print "\nPassword confirmation: "
+  password_confirmation = STDIN.gets.chomp
+  system('stty','echo');
+end
+
 # FIXME: asking whether the user wants to configure kerberos?
 puts "Stop krb5-kdc and kadmind services"
 `/etc/init.d/krb5-kdc stop`
@@ -287,27 +308,6 @@ puts "Update keytab file"
 puts "Stop krb5-kdc and kadmind services"
 `/etc/init.d/krb5-kdc start`
 `/etc/init.d/puavo_kadmind start`
-
-# User
-puts "Create organisation owner:"
-
-print "Given name: "
-given_name = options.has_key?(:given_name) ? options[:given_name] : STDIN.gets.chomp
-
-print "Surname: "
-surname = options.has_key?(:surname) ? options[:surname] : STDIN.gets.chomp
-print "Username: "
-username = options.has_key?(:username) ? options[:username] : STDIN.gets.chomp
-if options.has_key?(:password)
-  password = options[:password]
-else
-  system('stty','-echo');
-  print "Password: "
-  password = STDIN.gets.chomp
-  print "\nPassword confirmation: "
-  password_confirmation = STDIN.gets.chomp
-  system('stty','echo');
-end
 
 user = User.new
 
