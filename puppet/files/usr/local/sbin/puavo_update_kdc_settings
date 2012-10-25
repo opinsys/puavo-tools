@@ -67,8 +67,3 @@ end
 
 `chown root.openldap /etc/ldap/slapd.d/openldap-krb5.keytab`
 `chmod 0640 /etc/ldap/slapd.d/openldap-krb5.keytab`
-
-`/etc/init.d/slapd restart`
-`sleep 5`
-`/etc/init.d/krb5-kdc restart`
-`/etc/init.d/puavo_kadmind restart`
