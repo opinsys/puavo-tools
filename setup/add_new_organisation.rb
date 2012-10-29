@@ -251,19 +251,18 @@ role.groups << group
 kerberos_masterpw = newpass(20)
 puts "Initializing kerberos realm with master key: #{kerberos_masterpw}"
 
-realm = KerberosRealm.new( :ldap_server => configurations["settings"]["ldap_server"],
-                           :realm => kerberos_realm,
-                           :masterpw => kerberos_masterpw,
-                           :suffix => suffix,
-                           :domain => domain )
-
-kerberos_configuration = KerberosRealm.create_kerberos_configuration(configurations["settings"]["ldap_server"])
+kerberos_configuration = KerberosSettings.new(:ldap_server => configurations["settings"]["ldap_server"])
 
 kerberos_configuration.write_configurations_to_file
 
 kerberos_configuration.replace_server_configurations
 
-realm.create_ldap_tree
+realm = KerberosRealm.new( :ldap_server => configurations["settings"]["ldap_server"],
+                           :realm => kerberos_realm,
+                           :masterpw => kerberos_masterpw,
+                           :suffix => suffix,
+                           :domain => domain )
+realm.save
 
 puts "Update keytab file"
 kerberos_configuration.update_kdc_settings

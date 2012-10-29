@@ -30,7 +30,7 @@ end
 `echo "#{configurations["settings"]["kadmin"]["password"]}\\n#{configurations["settings"]["kadmin"]["password"]}\\n" | /usr/sbin/kdb5_ldap_util stashsrvpw -f /etc/krb5.secrets "#{configurations["settings"]["kadmin"]["bind_dn"]}" 2>/dev/null`
 
 # Get kerberos configuration from ldap (all organisation)
-kerberos_configuration = KerberosRealm.create_kerberos_configuration(configurations["settings"]["ldap_server"])
+kerberos_configuration = KerberosSettings.new(:ldap_server => configurations["settings"]["ldap_server"])
 
 kerberos_configuration.write_configurations_to_file
 
