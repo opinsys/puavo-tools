@@ -172,41 +172,4 @@ class KerberosRealm
 
     puts `echo "#{self.masterpw}\\n#{self.masterpw}\\n" | /usr/sbin/kdb5_ldap_util -D #{ldap_server["bind_dn"]} create -k aes256-cts-hmac-sha1-96 -subtrees "#{self.suffix}" -s -sf /etc/krb5kdc/stash.#{self.domain} -H ldaps://#{ldap_server["host"]} -r "#{self.realm}" -w #{ldap_server["password"]} 2>/dev/null`
   end
-
-  def self.create_kerberos_configuration(ldap_server)
-    databases = `ldapsearch -Z -x -D #{ldap_server['bind_dn']} -w #{ldap_server['password']} -H ldap://#{ldap_server['host']} -s base -b "" "(objectClass=*)" namingContexts 2>/dev/null | grep namingContexts:`
-
-    @organisations = []
-
-    databases.split("\n").each do |line|
-      if /namingContexts: (.*)/.match(line)
-        suffix = $1
-        organisation = {}
-        
-        if not /o=puavo/i.match(suffix) 
-          organisation['suffix'] = suffix
-
-          tmp_dbinfo = `ldapsearch -LLL -D #{ldap_server['bind_dn']} -w #{ldap_server['password']} -H ldap://#{ldap_server['host']} -x -s base -b #{suffix} -Z 2> /dev/null`
-
-          if /puavoDomain: (.*)/.match(tmp_dbinfo)
-            organisation['domain'] = $1
-          end
-
-          if /puavoKerberosRealm: (.*)/.match(tmp_dbinfo)
-            organisation['realm'] = $1
-          end
-
-          if /puavoKadminPort: (.*)/.match(tmp_dbinfo)
-            organisation['kadmin_port'] = $1
-          end
-
-          if organisation['domain'] and organisation['realm'] and organisation['kadmin_port']
-            @organisations.push organisation
-          end
-        end
-      end
-    end
-
-    settings = KerberosSettings.new(@organisations)
-  end
 end
