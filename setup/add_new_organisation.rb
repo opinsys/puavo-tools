@@ -305,7 +305,7 @@ puts "Update keytab file"
 `../puppet/files/usr/local/sbin/puavo_update_kdc_settings`
 
 # FIXME: asking whether the user wants to configure kerberos?
-puts "Stop krb5-kdc and kadmind services"
+puts "Start krb5-kdc and kadmind services"
 `/etc/init.d/krb5-kdc start`
 `/etc/init.d/puavo_kadmind start`
 
