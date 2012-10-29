@@ -3,7 +3,6 @@
 require "erb"
 require "yaml"
 require 'tempfile'
-
 def parse_erb(basename)
   ldif_template = File.read("templates/#{basename}.ldif.erb")
   ldif = ERB.new(ldif_template, 0, "%<>")
@@ -47,6 +46,10 @@ puts "Using #{@rootdn} as rootdn"
 @puppetpw_hash=`slappasswd -h "{SSHA}" -s "#{@puppetpw}"`.gsub(/\n/,"")
 @kdcpw_hash=`slappasswd -h "{SSHA}" -s "#{@kdcpw}"`.gsub(/\n/,"")
 @kadminpw_hash=`slappasswd -h "{SSHA}" -s "#{@kadminpw}"`.gsub(/\n/,"")
+
+`echo "#{configuration["settings"]["kdc"]["password"]}\\n#{configuration["settings"]["kdc"]["password"]}\\n" | /usr/sbin/kdb5_ldap_util stashsrvpw -f /etc/krb5.secrets "#{configuration["settings"]["kdc"]["bind_dn"]}" 2>/dev/null`
+`echo "#{configuration["settings"]["kadmin"]["password"]}\\n#{configuration["settings"]["kadmin"]["password"]}\\n" | /usr/sbin/kdb5_ldap_util stashsrvpw -f /etc/krb5.secrets "#{configuration["settings"]["kadmin"]["bind_dn"]}" 2>/dev/null`
+
 
 # First whole slapd configuration and all data is wiped out
 
