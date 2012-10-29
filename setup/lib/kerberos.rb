@@ -1,4 +1,7 @@
 class KerberosSettings
+  
+  TMP = File.expand_path('kerberos_tmp')
+
   def initialize(organisations)
     @organisations = organisations
   end
@@ -48,6 +51,61 @@ class KerberosSettings
 
   def getBinding
     return binding()
+  end
+
+  def write_configurations_to_file
+    # Generate configuration by ldap data
+    begin
+      File.new(TMP)
+    rescue Errno::ENOENT
+      Dir.mkdir(TMP)
+    end
+
+    # Create new konfiguration files to tmp directory
+    File.open("#{TMP}/kdc.conf", "w") do |file|
+      file.write(self.kdc_conf)
+    end
+
+    File.open("#{TMP}/krb5.conf", "w") do |file|
+      file.write(self.krb5_conf)
+    end
+
+    File.open("#{TMP}/kadm5.acl", "w") do |file|
+      file.write(self.kadm5_acl)
+    end
+
+    File.open("#{TMP}/krb5-kdc", "w") do |file|
+      file.write(self.daemon_args)
+    end
+  end
+
+  def diff
+    puts "Show differences: #{TMP}/kdc.conf /etc/krb5kdc/kdc.conf"
+    print `diff #{TMP}/kdc.conf /etc/krb5kdc/kdc.conf`
+    puts
+
+    puts "Show differences: #{TMP}/krb5.conf /etc/krb5.conf"
+    print `diff #{TMP}/krb5.conf /etc/krb5.conf`
+    puts
+
+    puts "Show differences: #{TMP}/kadm5.acl /etc/krb5kdc/kadm5.acl"
+    print `diff #{TMP}/kadm5.acl /etc/krb5kdc/kadm5.acl`
+    puts
+
+    puts "Show differences: #{TMP}/krb5-kdc /etc/default/krb5-kdc"
+    print `diff #{TMP}/krb5-kdc /etc/default/krb5-kdc`
+    puts
+  end
+
+  def replace_server_configurations
+    `mv #{TMP}/kdc.conf /etc/krb5kdc/kdc.conf`
+    `mv #{TMP}/krb5.conf /etc/krb5.conf`
+    `mv #{TMP}/kadm5.acl /etc/krb5kdc/kadm5.acl`
+    `mv #{TMP}/krb5-kdc /etc/default/krb5-kdc`
+  end
+
+  def update_kdc_settings
+    `../puppet/files/usr/local/sbin/puavo_update_kdc_settings`
   end
 end
   

@@ -32,58 +32,19 @@ end
 # Get kerberos configuration from ldap (all organisation)
 kerberos_configuration = KerberosRealm.create_kerberos_configuration(configurations["settings"]["ldap_server"])
 
-# Generate configuration by ldap data
-tmp_directory = File.expand_path('kerberos_tmp')
-begin
-  File.new(tmp_directory)
-rescue Errno::ENOENT
-  Dir.mkdir(tmp_directory)
-end
+kerberos_configuration.write_configurations_to_file
 
-# Create new konfiguration files to tmp directory
-File.open("#{tmp_directory}/kdc.conf", "w") do |file|
-  file.write(kerberos_configuration.kdc_conf)
-end
-
-File.open("#{tmp_directory}/krb5.conf", "w") do |file|
-  file.write(kerberos_configuration.krb5_conf)
-end
-
-File.open("#{tmp_directory}/kadm5.acl", "w") do |file|
-  file.write(kerberos_configuration.kadm5_acl)
-end
-
-File.open("#{tmp_directory}/krb5-kdc", "w") do |file|
-  file.write(kerberos_configuration.daemon_args)
-end
+# Check organisations keytab files
 
 # Show diff with new and old files
-puts "Show differences: #{tmp_directory}/kdc.conf /etc/krb5kdc/kdc.conf"
-print `diff #{tmp_directory}/kdc.conf /etc/krb5kdc/kdc.conf`
-puts
-
-puts "Show differences: #{tmp_directory}/krb5.conf /etc/krb5.conf"
-print `diff #{tmp_directory}/krb5.conf /etc/krb5.conf`
-puts
-
-puts "Show differences: #{tmp_directory}/kadm5.acl /etc/krb5kdc/kadm5.acl"
-print `diff #{tmp_directory}/kadm5.acl /etc/krb5kdc/kadm5.acl`
-puts
-
-puts "Show differences: #{tmp_directory}/krb5-kdc /etc/default/krb5-kdc"
-print `diff #{tmp_directory}/krb5-kdc /etc/default/krb5-kdc`
-puts
+kerberos_configuration.diff
 
 # Replace kerberos configuration files
 puts "Replcae kerberson configuration files? (y/n)"
 replace = STDIN.gets.chomp
-
 if replace == "y"
-  `mv #{tmp_directory}/kdc.conf /etc/krb5kdc/kdc.conf`
-  `mv #{tmp_directory}/krb5.conf /etc/krb5.conf`
-  `mv #{tmp_directory}/kadm5.acl /etc/krb5kdc/kadm5.acl`
-  `mv #{tmp_directory}/krb5-kdc /etc/default/krb5-kdc`
+  kerberos_configuration.replace_server_configurations
 end
 
 puts "Update keytab file"
-`../puppet/files/usr/local/sbin/puavo_update_kdc_settings`
+kerberos_configuration.update_kdc_settings
