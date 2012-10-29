@@ -248,14 +248,6 @@ group = Group.create!( :displayName => group_name,
 # Added association
 role.groups << group
 
-# Create kerberos realm
-
-#`mkdir -p /etc/krb5kdc/masterkeys`
-#`chmod 0700 /etc/krb5kdc/masterkeys`
-
-`echo "#{configurations["settings"]["kdc"]["password"]}\\n#{configurations["settings"]["kdc"]["password"]}\\n" | /usr/sbin/kdb5_ldap_util stashsrvpw -f /etc/krb5.secrets "#{configurations["settings"]["kdc"]["bind_dn"]}" 2>/dev/null`
-`echo "#{configurations["settings"]["kadmin"]["password"]}\\n#{configurations["settings"]["kadmin"]["password"]}\\n" | /usr/sbin/kdb5_ldap_util stashsrvpw -f /etc/krb5.secrets "#{configurations["settings"]["kadmin"]["bind_dn"]}" 2>/dev/null`
-
 kerberos_masterpw = newpass(20)
 puts "Initializing kerberos realm with master key: #{kerberos_masterpw}"
 
@@ -265,44 +257,16 @@ realm = KerberosRealm.new( :ldap_server => configurations["settings"]["ldap_serv
                            :suffix => suffix,
                            :domain => domain )
 
-conf = KerberosRealm.create_kerberos_configuration(configurations["settings"]["ldap_server"])
+kerberos_configuration = KerberosRealm.create_kerberos_configuration(configurations["settings"]["ldap_server"])
 
-File.open("/etc/krb5kdc/kdc.conf", "w") {|file|
-        file.write(conf.kdc_conf)
-}
+kerberos_configuration.write_configurations_to_file
 
-File.open("/etc/krb5.conf", "w") {|file|
-        file.write(conf.krb5_conf)
-}
-
-File.open("/etc/krb5kdc/kadm5.acl", "w") {|file|
-        file.write(conf.kadm5_acl)
-}
-
-File.open("/etc/default/krb5-kdc", "w") {|file|
-        file.write(conf.daemon_args)
-}
+kerberos_configuration.replace_server_configurations
 
 realm.create_ldap_tree
 
-puts configurations["settings"]["puppetmaster"]["enable"]
-
-if configurations["settings"]["puppetmaster"]["enable"]
-  `mkdir -p #{configurations["settings"]["puppetmaster"]["file_dir"]}/etc/krb5kdc/`
-  `mkdir -p #{configurations["settings"]["puppetmaster"]["file_dir"]}/etc/default/`
-  `cp /etc/krb5kdc/* #{configurations["settings"]["puppetmaster"]["file_dir"]}/etc/krb5kdc/`
-  `cp /etc/krb5.conf #{configurations["settings"]["puppetmaster"]["file_dir"]}/etc/`
-  `cp /etc/krb5.secrets #{configurations["settings"]["puppetmaster"]["file_dir"]}/etc/`
-  `cp /etc/default/krb5-kdc #{configurations["settings"]["puppetmaster"]["file_dir"]}/etc/default/krb5-kdc`
-  `chown -R puppet #{configurations["settings"]["puppetmaster"]["file_dir"]}/*`
-
-  puts "Puppet kerberos files updated"
-else
-  puts "Puppet configuration disabled"
-end
-
 puts "Update keytab file"
-`../puppet/files/usr/local/sbin/puavo_update_kdc_settings`
+kerberos_configuration.update_kdc_settings
 
 # FIXME: asking whether the user wants to configure kerberos?
 puts "Start krb5-kdc and kadmind services"
