@@ -145,7 +145,43 @@ class KerberosSettings
   end
 
   def update_kdc_settings
-    `../puppet/files/usr/local/sbin/puavo_update_kdc_settings`
+    # `../puppet/files/usr/local/sbin/puavo_update_kdc_settings`
+
+    hostname = `hostname -f`.chomp
+
+    @organisations.each do |organisation|
+
+      smbkrb5pwd_kt = `echo "read_kt /etc/ldap/slapd.d/openldap-krb5.keytab\nlist" | sudo ktutil 2>/dev/null|grep smbkrb5pwd/#{hostname}@#{organisation['realm']}`.chomp
+      ldap_kt = `echo "read_kt /etc/ldap/slapd.d/openldap-krb5.keytab\nlist" | sudo ktutil 2>/dev/null|grep ldap/#{hostname}@#{organisation['realm']}`.chomp
+
+      if smbkrb5pwd_kt.empty?
+        smbkrb5pwd_princ = `kadmin.local -r #{organisation['realm']} -q "listprincs" | grep smbkrb5pwd/#{hostname}@#{organisation['realm']}`.chomp
+        
+        if smbkrb5pwd_princ.empty?
+          puts "Creating smbkrb5pwd/#{hostname}@#{organisation['realm']} principal"
+          `kadmin.local -r #{organisation['realm']} -q "addprinc -randkey smbkrb5pwd/#{hostname}@#{organisation['realm']}"`
+        end
+        
+        puts "Exporting smbkrb5pwd/#{hostname}@#{organisation['realm']} to keytab"
+        puts `kadmin.local -r #{organisation['realm']} -q "ktadd -e des-cbc-crc:normal -k /etc/ldap/slapd.d/openldap-krb5.keytab smbkrb5pwd/#{hostname}@#{organisation['realm']}"`
+      end
+
+      if ldap_kt.empty?
+        ldap_princ = `kadmin.local -r #{organisation['realm']} -q "listprincs" | grep ldap/#{hostname}@#{organisation['realm']}`.chomp
+
+        if ldap_princ.empty?
+          puts "Creating ldap/#{hostname}@#{organisation['realm']} principal"
+          `kadmin.local -r #{organisation['realm']} -q "addprinc -randkey ldap/#{hostname}@#{organisation['realm']}"`
+        end
+
+        puts "Exporting ldap/#{hostname}@#{organisation['realm']} to keytab"
+        puts `kadmin.local -r #{organisation['realm']} -q "ktadd -e des-cbc-crc:normal -k /etc/ldap/slapd.d/openldap-krb5.keytab ldap/#{hostname}@#{organisation['realm']}"`
+      end
+    end
+
+    `chown root.openldap /etc/ldap/slapd.d/openldap-krb5.keytab`
+    `chmod 0640 /etc/ldap/slapd.d/openldap-krb5.keytab`
+
   end
 end
   
