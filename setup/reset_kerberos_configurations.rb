@@ -38,6 +38,10 @@ kerberos_configuration.write_configurations_to_file
 # Show diff with new and old files
 kerberos_configuration.diff
 
+puts "Generate new keytab file"
+kerberos_configuration.generate_new_keytab_file
+
+
 # Replace kerberos configuration files
 puts "Replace kerberos configuration files? (y/n)"
 replace = STDIN.gets.chomp
@@ -48,9 +52,9 @@ if replace == "y"
 
   kerberos_configuration.replace_server_configurations
 
-  puts "Update keytab file"
-  kerberos_configuration.update_kdc_settings
+  kerberos_configuration.replace_keytab_file
   
+  puts "\nStart krb5-kdc and kadmind services\n\n"
   `/etc/init.d/krb5-kdc start`
   `/etc/init.d/puavo_kadmind start`
 end

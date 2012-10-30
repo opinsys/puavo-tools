@@ -282,7 +282,8 @@ realm = KerberosRealm.new( :ldap_server => configurations["settings"]["ldap_serv
 realm.save
 
 puts "Update keytab file"
-kerberos_configuration.update_kdc_settings
+kerberos_configuration.generate_new_keytab_file
+kerberos_configuration.replace_keytab_file
 
 # FIXME: asking whether the user wants to configure kerberos?
 puts "Start krb5-kdc and kadmind services"
