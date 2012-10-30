@@ -12,8 +12,7 @@ require 'active_ldap'
 require 'optparse'
 require 'readline'
 require 'kerberos'
-
-require 'ruby-debug'
+#require 'ruby-debug'
 
 # LDAP configuration
 if configurations = YAML.load_file("config/ldap.yml") rescue nil
