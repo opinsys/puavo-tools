@@ -42,8 +42,16 @@ kerberos_configuration.diff
 puts "Replace kerberos configuration files? (y/n)"
 replace = STDIN.gets.chomp
 if replace == "y"
+  puts "\nStop krb5-kdc and kadmind services\n\n"
+  `/etc/init.d/krb5-kdc stop`
+  `/etc/init.d/puavo_kadmind stop`
+
   kerberos_configuration.replace_server_configurations
+
+  puts "Update keytab file"
+  kerberos_configuration.update_kdc_settings
+  
+  `/etc/init.d/krb5-kdc start`
+  `/etc/init.d/puavo_kadmind start`
 end
 
-puts "Update keytab file"
-kerberos_configuration.update_kdc_settings
