@@ -147,8 +147,6 @@ class KerberosSettings
   end
 
   def update_kdc_settings
-    # `../puppet/files/usr/local/sbin/puavo_update_kdc_settings`
-
     hostname = `hostname -f`.chomp
 
     @organisations.each do |organisation|
