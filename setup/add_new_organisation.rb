@@ -10,6 +10,7 @@ require 'rubygems'
 require 'active_ldap'
 require 'optparse'
 require 'readline'
+#require 'ruby-debug'
 
 options = {}
 a = OptionParser.new do |opts|
