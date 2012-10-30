@@ -40,7 +40,7 @@ kerberos_configuration.write_configurations_to_file
 kerberos_configuration.diff
 
 # Replace kerberos configuration files
-puts "Replcae kerberson configuration files? (y/n)"
+puts "Replace kerberson configuration files? (y/n)"
 replace = STDIN.gets.chomp
 if replace == "y"
   kerberos_configuration.replace_server_configurations
