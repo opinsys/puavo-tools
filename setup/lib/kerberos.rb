@@ -1,11 +1,13 @@
 class KerberosSettings
-  
+
+  attr_accessor :organisations
+
   TMP = File.expand_path('kerberos_tmp')
 
   def self.find_all_organisations(ldap_server)
     databases = `ldapsearch -Z -x -D #{ldap_server['bind_dn']} -w #{ldap_server['password']} -H ldap://#{ldap_server['host']} -s base -b "" "(objectClass=*)" namingContexts 2>/dev/null | grep namingContexts:`
 
-    organisations = []
+    kerberos_organisations = []
 
     databases.split("\n").each do |line|
       if /namingContexts: (.*)/.match(line)
@@ -30,13 +32,13 @@ class KerberosSettings
           end
 
           if organisation['domain'] and organisation['realm'] and organisation['kadmin_port']
-            organisations.push organisation
+            kerberos_organisations.push organisation
           end
         end
       end
     end
 
-    return organisations
+    return kerberos_organisations
 
   end
 
