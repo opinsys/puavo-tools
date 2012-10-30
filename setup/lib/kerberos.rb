@@ -202,10 +202,6 @@ class KerberosRealm
 
   # Create kerberos ldap tree and stash file
   def save
-    puts self.masterpw
-
-    puts "echo \"#{self.masterpw}\\n#{self.masterpw}\\n\" | /usr/sbin/kdb5_ldap_util -D #{ldap_server['bind_dn']} create -k aes256-cts-hmac-sha1-96 -subtrees \"#{self.suffix}\" -s -sf /etc/krb5kdc/stash.#{self.domain} -H ldaps://#{ldap_server['host']} -r \"#{self.realm}\" -w #{ldap_server['password']} 2>/dev/null"
-
     puts `echo "#{self.masterpw}\\n#{self.masterpw}\\n" | /usr/sbin/kdb5_ldap_util -D #{ldap_server["bind_dn"]} create -k aes256-cts-hmac-sha1-96 -subtrees "#{self.suffix}" -s -sf /etc/krb5kdc/stash.#{self.domain} -H ldaps://#{ldap_server["host"]} -r "#{self.realm}" -w #{ldap_server["password"]} 2>/dev/null`
   end
 end

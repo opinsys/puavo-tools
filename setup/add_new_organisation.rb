@@ -145,15 +145,31 @@ puts "* Suffix start: #{suffix_start}"
 Readline.readline('OK?', true) unless options[:yes]
 
 # User
-puts "Create organisation owner:"
+puts "\nCreate organisation owner:"
 
-print "Given name: "
-given_name = options.has_key?(:given_name) ? options[:given_name] : STDIN.gets.chomp
+if options.has_key?(:given_name)
+  given_name = options[:given_name]
+  puts "Given name: #{given_name}"
+else
+  print "Given name: "
+  given_name = STDIN.gets.chomp
+end
 
-print "Surname: "
-surname = options.has_key?(:surname) ? options[:surname] : STDIN.gets.chomp
-print "Username: "
-username = options.has_key?(:username) ? options[:username] : STDIN.gets.chomp
+if options.has_key?(:surname)
+  surname = options[:surname]
+  puts "Surname: #{surname}"
+else
+  print "Surname: "
+  surname = STDIN.gets.chomp
+end
+
+if options.has_key?(:username)
+  username =  options[:username] 
+  puts "Username: #{username}"
+else
+  print "Username: "
+  username =  STDIN.gets.chomp
+end
 if options.has_key?(:password)
   password = options[:password]
 else
@@ -166,7 +182,7 @@ else
 end
 
 # FIXME: asking whether the user wants to configure kerberos?
-puts "Stop krb5-kdc and kadmind services"
+puts "\nStop krb5-kdc and kadmind services\n\n"
 `/etc/init.d/krb5-kdc stop`
 `/etc/init.d/puavo_kadmind stop`
 
@@ -250,7 +266,7 @@ group = Group.create!( :displayName => group_name,
 role.groups << group
 
 kerberos_masterpw = newpass(20)
-puts "Initializing kerberos realm with master key: #{kerberos_masterpw}"
+puts "\nInitializing kerberos realm with master key: #{kerberos_masterpw}\n"
 
 kerberos_configuration = KerberosSettings.new(:ldap_server => configurations["settings"]["ldap_server"])
 
