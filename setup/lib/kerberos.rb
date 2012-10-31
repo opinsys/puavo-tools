@@ -158,7 +158,7 @@ class KerberosSettings
       end
 
       puts "Exporting smbkrb5pwd/#{hostname}@#{organisation['realm']} to keytab"
-      puts `kadmin.local -r #{organisation['realm']} -q "ktadd -e des-cbc-crc:normal -k #{TMP}/openldap-krb5.keytab smbkrb5pwd/#{hostname}@#{organisation['realm']}"`
+      puts `kadmin.local -r #{organisation['realm']} -q "ktadd -norandkey -e des-cbc-crc:normal -k #{TMP}/openldap-krb5.keytab smbkrb5pwd/#{hostname}@#{organisation['realm']}"`
 
       ldap_princ = `kadmin.local -r #{organisation['realm']} -q "listprincs" | grep ldap/#{hostname}@#{organisation['realm']}`.chomp
 
@@ -168,7 +168,7 @@ class KerberosSettings
       end
       
       puts "Exporting ldap/#{hostname}@#{organisation['realm']} to keytab"
-      puts `kadmin.local -r #{organisation['realm']} -q "ktadd -e des-cbc-crc:normal -k #{TMP}/openldap-krb5.keytab ldap/#{hostname}@#{organisation['realm']}"`
+      puts `kadmin.local -r #{organisation['realm']} -q "ktadd -norandkey -e des-cbc-crc:normal -k #{TMP}/openldap-krb5.keytab ldap/#{hostname}@#{organisation['realm']}"`
     end
   end
 
