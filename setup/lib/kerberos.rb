@@ -150,25 +150,32 @@ class KerberosSettings
     hostname = `hostname -f`.chomp
 
     @organisations.each do |organisation|
-      puts "Creating smbkrb5pwd/#{hostname}@#{organisation['realm']} principal"
-      `kadmin.local -r #{organisation['realm']} -q "addprinc -randkey smbkrb5pwd/#{hostname}@#{organisation['realm']}"`     
-      puts "Exporting smbkrb5pwd/#{hostname}@#{organisation['realm']} to keytab"
-      `kadmin.local -r #{organisation['realm']} -q "ktadd -e des-cbc-crc:normal -k #{TMP}/openldap-krb5.keytab smbkrb5pwd/#{hostname}@#{organisation['realm']}"`
+      smbkrb5pwd_princ = `kadmin.local -r #{organisation['realm']} -q "listprincs" | grep smbkrb5pwd/#{hostname}@#{organisation['realm']}`.chomp
 
-
-      puts "Creating ldap/#{hostname}@#{organisation['realm']} principal"
-      `kadmin.local -r #{organisation['realm']} -q "addprinc -randkey ldap/#{hostname}@#{organisation['realm']}"`
-
-      puts "Exporting ldap/#{hostname}@#{organisation['realm']} to keytab"
-      `kadmin.local -r #{organisation['realm']} -q "ktadd -e des-cbc-crc:normal -k #{TMP}/openldap-krb5.keytab ldap/#{hostname}@#{organisation['realm']}"`
+      if smbkrb5pwd_princ.empty?
+        puts "Creating smbkrb5pwd/#{hostname}@#{organisation['realm']} principal"
+        `kadmin.local -r #{organisation['realm']} -q "addprinc -randkey smbkrb5pwd/#{hostname}@#{organisation['realm']}"`
       end
 
-    `chown root.openldap #{TMP}/openldap-krb5.keytab`
-    `chmod 0640 #{TMP}/openldap-krb5.keytab`
+      puts "Exporting smbkrb5pwd/#{hostname}@#{organisation['realm']} to keytab"
+      puts `kadmin.local -r #{organisation['realm']} -q "ktadd -e des-cbc-crc:normal -k #{TMP}/openldap-krb5.keytab smbkrb5pwd/#{hostname}@#{organisation['realm']}"`
+
+      ldap_princ = `kadmin.local -r #{organisation['realm']} -q "listprincs" | grep ldap/#{hostname}@#{organisation['realm']}`.chomp
+
+      if ldap_princ.empty?
+        puts "Creating ldap/#{hostname}@#{organisation['realm']} principal"
+        `kadmin.local -r #{organisation['realm']} -q "addprinc -randkey ldap/#{hostname}@#{organisation['realm']}"`
+      end
+      
+      puts "Exporting ldap/#{hostname}@#{organisation['realm']} to keytab"
+      puts `kadmin.local -r #{organisation['realm']} -q "ktadd -e des-cbc-crc:normal -k #{TMP}/openldap-krb5.keytab ldap/#{hostname}@#{organisation['realm']}"`
+    end
   end
 
   def replace_keytab_file
     `mv #{TMP}/openldap-krb5.keytab /etc/ldap/slapd.d/openldap-krb5.keytab`
+    `chown root.openldap /etc/ldap/slapd.d/openldap-krb5.keytab`
+    `chmod 0640 /etc/ldap/slapd.d/openldap-krb5.keytab`
   end
 end
   
