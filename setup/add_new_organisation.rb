@@ -290,6 +290,10 @@ puts "Start krb5-kdc and kadmind services"
 `/etc/init.d/krb5-kdc start`
 `/etc/init.d/puavo_kadmind start`
 
+`/etc/init.d/slapd restart`
+
+sleep(3)
+
 user = User.new
 
 user.givenName = given_name
