@@ -57,5 +57,9 @@ if replace == "y"
   puts "\nStart krb5-kdc and kadmind services\n\n"
   `/etc/init.d/krb5-kdc start`
   `/etc/init.d/puavo_kadmind start`
+
+  puts "Restart slapd"
+  puts `/etc/init.d/slapd restart`
+
 end
 
