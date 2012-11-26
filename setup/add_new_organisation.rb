@@ -36,9 +36,6 @@ a = OptionParser.new do |opts|
   opts.on("--samba_domain [SAMBA_DOMAIN]", "Samba domain") do |samba_domain|
     options[:samba_domain] = samba_domain
   end
-  opts.on("--puppet_host [PUPPET_HOST]", "Puppet host") do |puppet_host|
-    options[:puppet_host] = puppet_host
-  end
   opts.on("--suffix [SUFFIX]", "Suffix") do |suffix|
     options[:suffix] = suffix
   end
@@ -107,7 +104,6 @@ def newpass( len )
   return newpass
 end
 
-puppet_host_template = configurations["settings"]["templates"]["puppet_host"]
 samba_domain_template = configurations["settings"]["templates"]["samba_domain"]
 suffix_template = configurations["settings"]["templates"]["suffix"]
 domain_template = configurations["settings"]["templates"]["domain"]
@@ -123,9 +119,7 @@ suffix_start = suffix.split(',')[0]
 organisation_name = options.has_key?(:organisation_name) ? options[:organisation_name] : orgname 
 legal_name = options.has_key?(:legal_name) ? options[:legal_name] : organisation_name
 
-puppet_host = options.has_key?(:puppet_host) ? options[:puppet_host] : puppet_host_template % orgname.downcase
 samba_domain = options.has_key?(:samba_domain) ? options[:samba_domain] : samba_domain_template % orgname.upcase
-#puts "Usage: $0 orgname [domain_name] [Organisation name] [Legal name] [samba domain] [puppet host] [suffix]"
 
 puts "******************************************************"
 puts "  Initialising organisation: #{organisation_name}"
@@ -139,7 +133,6 @@ puts "* Kerberos realm: #{kerberos_realm}"
 puts "* Legal name: #{legal_name}"
 puts "* Samba: #{samba_domain}"
 puts "* Domain: #{domain}"
-puts "* Puppet host: #{puppet_host}"
 puts "* Suffix start: #{suffix_start}"
 
 Readline.readline('OK?', true) unless options[:yes]
@@ -203,11 +196,6 @@ puts "* Setting up overlay configuration to database"
 Overlay.create_overlays(:database => new_db,
                         :kerberos_realm => kerberos_realm)
 
-if ActiveLdap::Base.configurations["settings"]["syncrepl"]["nodes"]
-  puts "* Setting up replication configuration"
-  new_db.set_replication_settings
-end
-
 # Create organisation and set LdapOrganisationBase LDAP connection
 puts "* Create organisation root"
 organisation = Organisation.create( :owner => configurations["settings"]["ldap_server"]["bind_dn"],
@@ -218,7 +206,6 @@ organisation = Organisation.create( :owner => configurations["settings"]["ldap_s
                                     :cn => organisation_name,
                                     :description => organisation_name,
                                     :eduOrgLegalName => legal_name,
-                                    :puavoPuppetHost => puppet_host,
                                     :sambaDomainName => samba_domain )
 
 puts "* Add organizational units: People, Groups, Hosts, Automount, etc..."
