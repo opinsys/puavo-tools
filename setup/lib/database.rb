@@ -1,6 +1,7 @@
 require 'id_pool'
 require 'lib/database_acl'
 require 'tempfile'
+require 'fileutils'
 
 class Database < ActiveLdap::Base
   ldap_mapping( :dn_attribute => "olcDatabase",
@@ -32,6 +33,11 @@ class Database < ActiveLdap::Base
                        'entryCSN eq'
                        ]
     self.olcDbDirectory = "/var/lib/ldap/db#{next_directory_id}"
+
+    # Make sure that the database directory exists, because slapd
+    # does not create it automatically
+    FileUtils.mkdir_p self.olcDbDirectory
+    FileUtils.chown 'openldap', 'openldap', self.olcDbDirectory
 
     # Database ACLs
     suffix = self.olcSuffix
